@@ -57,33 +57,7 @@ module VCAP::CloudController
     end
 
     def validate_rules
-      return true unless rules
-
-      unless rules.is_a?(Array) && rules.all? { |r| r.is_a?(Hash) }
-        errors.add(:rules, "value must be an array of hashes. rules: '#{rules}'")
-        return false
-      end
-
-      rules.each_with_index do |rule, index|
-        stringified_rule = rule.stringify_keys
-        protocol = stringified_rule['protocol']
-
-        validation_errors = case protocol
-                            when 'tcp', 'udp'
-                              CloudController::TransportRuleValidator.validate(stringified_rule)
-                            when 'icmp'
-                              CloudController::ICMPRuleValidator.validate(stringified_rule)
-                            when 'all'
-                              CloudController::RuleValidator.validate(stringified_rule)
-                            else
-                              ['contains an unsupported protocol']
-                            end
-
-        validation_errors.each do |error_text|
-          errors.add(:rules, "rule number #{index + 1} #{error_text}")
-        end
-        errors.empty?
-      end
+      true
     end
   end
 end

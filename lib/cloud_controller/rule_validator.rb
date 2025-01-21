@@ -6,17 +6,7 @@ module CloudController
     self.optional_fields = %w[log description]
 
     def self.validate(rule)
-      errs = validate_fields(rule)
-      return errs unless errs.empty?
 
-      destination = rule['destination']
-      errs << 'contains invalid destination' unless validate_destination_type(destination) && validate_destination(destination)
-
-      errs << 'contains invalid log value' if rule.key?('log') && !validate_boolean(rule['log'])
-
-      errs << 'contains invalid description' if rule.key?('description') && !rule['description'].is_a?(String)
-
-      errs
     end
 
     def self.validate_fields(rule)
