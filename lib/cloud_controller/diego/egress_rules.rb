@@ -66,7 +66,7 @@ module VCAP::CloudController
         }
 
         case protocol
-        when 'icmp'
+        when 'icmp', 'icmpv6'
           template['icmp_info'] = { 'type' => rule['type'], 'code' => rule['code'] }
         when 'tcp', 'udp'
           range = rule['ports'].split('-')
