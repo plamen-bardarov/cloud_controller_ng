@@ -27,28 +27,28 @@ class RulesValidator < ActiveModel::Validator
 
       validate_allowed_keys(rule, record, index)
 
-      add_rule_error("protocol must be 'tcp', 'udp', 'icmp', or 'all'", record, index) unless valid_protocol(rule[:protocol])
+#      add_rule_error("protocol must be 'tcp', 'udp', 'icmp', or 'all'", record, index) unless valid_protocol(rule[:protocol])
+#
+#       if valid_destination_type(rule[:destination], record, index)
+#         rules = rule[:destination].split(',', -1)
+#         add_rule_error("maximum destinations per rule exceeded - must be under #{MAX_DESTINATIONS_PER_RULE}", record, index) unless rules.length <= MAX_DESTINATIONS_PER_RULE
 
-      if valid_destination_type(rule[:destination], record, index)
-        rules = rule[:destination].split(',', -1)
-        add_rule_error("maximum destinations per rule exceeded - must be under #{MAX_DESTINATIONS_PER_RULE}", record, index) unless rules.length <= MAX_DESTINATIONS_PER_RULE
-
-        rules.each do |d|
-          validate_destination(d, record, index)
-        end
+#         rules.each do |d|
+#           validate_destination(d, record, index)
+#         end
       end
 
       validate_description(rule, record, index)
       validate_log(rule, record, index)
 
-      case rule[:protocol]
-      when 'tcp', 'udp'
-        validate_tcp_udp_protocol(rule, record, index)
-      when 'icmp'
-        validate_icmp_protocol(rule, record, index)
-      when 'all'
-        add_rule_error('ports are not allowed for protocols of type all', record, index) if rule[:ports]
-      end
+#       case rule[:protocol]
+#       when 'tcp', 'udp'
+#         validate_tcp_udp_protocol(rule, record, index)
+#       when 'icmp'
+#         validate_icmp_protocol(rule, record, index)
+#       when 'all'
+#         add_rule_error('ports are not allowed for protocols of type all', record, index) if rule[:ports]
+#       end
     end
   end
 
