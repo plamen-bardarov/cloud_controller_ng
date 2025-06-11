@@ -58,6 +58,9 @@ class RolesController < ApplicationController
     render status: :created, json: Presenters::V3::RolePresenter.new(role)
   rescue RoleCreate::Error => e
     unprocessable!(e)
+  rescue UaaRateLimited
+    headers['Retry-After'] = rand(5..20).to_s
+    raise CloudController::Errors::V3::ApiError.new_from_details('UaaRateLimited')
   rescue UaaUnavailable
     raise CloudController::Errors::ApiError.new_from_details('UaaUnavailable')
   end
@@ -83,7 +86,7 @@ class RolesController < ApplicationController
     role_owner = fetch_role_owner_with_name(role)
     delete_action = RoleDeleteAction.new(user_audit_info, role_owner)
     deletion_job = VCAP::CloudController::Jobs::DeleteActionJob.new(Role, role.guid, delete_action)
-    pollable_job = Jobs::Enqueuer.new(deletion_job, queue: Jobs::Queues.generic).enqueue_pollable
+    pollable_job = Jobs::Enqueuer.new(queue: Jobs::Queues.generic).enqueue_pollable(deletion_job)
 
     head :accepted, 'Location' => url_builder.build_url(path: "/v3/jobs/#{pollable_job.guid}")
   end

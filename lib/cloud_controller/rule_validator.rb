@@ -33,19 +33,14 @@ module CloudController
     end
 
     def self.parse_ip(val)
-      if val.is_a?(Array)
-        val.map do |ip|
-          NetAddr::IPv4.parse(ip)
-        end
-      else
-        NetAddr::IPv4Net.parse(val)
-      end
-    rescue NetAddr::ValidationError
-      nil
+      ipv4 = parse_ipv4(val)
+
+      ipv6 = parse_ipv6(val) if !ipv4 && config.get(:enable_ipv6)
+
+      ipv4 || ipv6
     end
 
     def self.comma_delimited_destinations_enabled?
-      config = VCAP::CloudController::Config.config
       config.get(:security_groups, :enable_comma_delimited_destinations)
     end
 
@@ -60,7 +55,18 @@ module CloudController
       no_zeros
     end
 
+    private_class_method def self.config
+      VCAP::CloudController::Config.config
+    end
+
     private_class_method def self.no_leading_zeros_in_address(address)
+      return no_leading_zeros_in_ipv4_address(address) if address.include?('.')
+
+      # return true for IPv6 addresses, as leading zeros are allowed
+      true
+    end
+
+    private_class_method def self.no_leading_zeros_in_ipv4_address(address)
       address.split('.') do |octet|
         if octet.start_with?('0') && octet.length > 1
           octet_parts = octet.split('/')
@@ -71,6 +77,30 @@ module CloudController
       end
 
       true
+    end
+
+    private_class_method def self.parse_ipv4(val)
+      if val.is_a?(Array)
+        val.map do |ip|
+          NetAddr::IPv4.parse(ip)
+        end
+      else
+        NetAddr::IPv4Net.parse(val)
+      end
+    rescue NetAddr::ValidationError
+      nil
+    end
+
+    private_class_method def self.parse_ipv6(val)
+      if val.is_a?(Array)
+        val.map do |ip|
+          NetAddr::IPv6.parse(ip)
+        end
+      else
+        NetAddr::IPv6Net.parse(val)
+      end
+    rescue NetAddr::ValidationError
+      nil
     end
   end
 end

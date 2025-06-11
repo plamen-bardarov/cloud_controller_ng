@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'lightweight_spec_helper'
 require 'messages/validators'
 require 'messages/base_message'
@@ -8,6 +7,7 @@ require 'cloud_controller/diego/lifecycles/app_docker_lifecycle'
 require 'cloud_controller/diego/lifecycles/app_buildpack_lifecycle'
 require 'cloud_controller/diego/lifecycles/lifecycles'
 require 'rspec/collection_matchers'
+require 'pry'
 
 module VCAP::CloudController::Validators
   RSpec.describe 'Validators' do
@@ -545,8 +545,8 @@ module VCAP::CloudController::Validators
         expect(message).to be_valid
       end
 
-      it 'successfully validates least-connections load-balancing algorithm' do
-        message = OptionsMessage.new({ options: { loadbalancing: 'least-connections' } })
+      it 'successfully validates least-connection load-balancing algorithm' do
+        message = OptionsMessage.new({ options: { loadbalancing: 'least-connection' } })
         expect(message).to be_valid
       end
 
@@ -575,7 +575,7 @@ module VCAP::CloudController::Validators
       it 'adds invalid load balancer error message to the base class' do
         message = OptionsMessage.new({ options: { loadbalancing: 'donuts' } })
         expect(message).not_to be_valid
-        expect(message.errors_on(:options)).to include("Loadbalancing must be one of 'round-robin, least-connections' if present")
+        expect(message.errors_on(:options)).to include("Loadbalancing must be one of 'round-robin, least-connection' if present")
       end
 
       it 'adds invalid field error message to the base class' do

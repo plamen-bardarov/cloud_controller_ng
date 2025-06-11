@@ -54,6 +54,9 @@ class UsersController < ApplicationController
     else
       render status: :created, json: Presenters::V3::UserPresenter.new(user, uaa_users: User.uaa_users_info([user.guid]))
     end
+  rescue UaaRateLimited
+    headers['Retry-After'] = rand(5..20).to_s
+    raise CloudController::Errors::V3::ApiError.new_from_details('UaaRateLimited')
   rescue VCAP::CloudController::UaaUnavailable
     raise CloudController::Errors::ApiError.new_from_details('UaaUnavailable')
   rescue UserCreate::Error => e
@@ -82,7 +85,7 @@ class UsersController < ApplicationController
 
     delete_action = UserDeleteAction.new
     deletion_job = VCAP::CloudController::Jobs::DeleteActionJob.new(User, user.guid, delete_action)
-    pollable_job = Jobs::Enqueuer.new(deletion_job, queue: Jobs::Queues.generic).enqueue_pollable
+    pollable_job = Jobs::Enqueuer.new(queue: Jobs::Queues.generic).enqueue_pollable(deletion_job)
 
     head :accepted, 'Location' => url_builder.build_url(path: "/v3/jobs/#{pollable_job.guid}")
   end

@@ -177,6 +177,9 @@ module VCAP::CloudController
       app.revisions_enabled
     end
 
+    delegate :service_binding_k8s_enabled, to: :app
+    delegate :file_based_vcap_services_enabled, to: :app
+
     def package_hash
       # this caches latest_package for performance reasons
       package = latest_package
@@ -449,6 +452,8 @@ module VCAP::CloudController
       end.compact
       DatabaseUriGenerator.new(service_binding_uris).database_uri
     end
+
+    delegate :windows_gmsa_credential_refs, to: :app
 
     def max_app_disk_in_mb
       VCAP::CloudController::Config.config.get(:maximum_app_disk_in_mb)

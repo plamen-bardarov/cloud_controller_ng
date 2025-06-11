@@ -106,12 +106,17 @@ class RulesValidator < ActiveModel::Validator
       add_rule_error(error_message, record, index) unless CloudController::RuleValidator.parse_ip(address_list.first)
 
     elsif address_list.length == 2
-      ipv4s = CloudController::RuleValidator.parse_ip(address_list)
-      return add_rule_error('destination IP address range is invalid', record, index) unless ipv4s
+      ips = CloudController::RuleValidator.parse_ip(address_list)
+      return add_rule_error('destination IP address range is invalid', record, index) unless ips
 
-      sorted_ipv4s = NetAddr.sort_IPv4(ipv4s)
+      sorted_ips = if ips.first.is_a?(NetAddr::IPv4)
+                     NetAddr.sort_IPv4(ips)
+                   else
+                     NetAddr.sort_IPv6(ips)
+                   end
+
       reversed_range_error = 'beginning of IP address range is numerically greater than the end of its range (range endpoints are inverted)'
-      add_rule_error(reversed_range_error, record, index) unless ipv4s.first == sorted_ipv4s.first
+      add_rule_error(reversed_range_error, record, index) unless ips.first == sorted_ips.first
 
     else
       add_rule_error(error_message, record, index)
